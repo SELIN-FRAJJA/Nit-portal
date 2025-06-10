@@ -1,0 +1,386 @@
+[
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. S. Selvakumar",
+  "Designation": "Professor",
+  "Email": "ssk.nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. N. Ramasubramanian",
+  "Designation": "Professor",
+  "Email": "nrs@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. C. Mala",
+  "Designation": "Professor",
+  "Email": "mala@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. S. Mary Saira Bhanu",
+  "Designation": "Professor",
+  "Email": "msb@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. R. Leela Velusamy",
+  "Designation": "Associate Professor",
+  "Email": "leela@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. R. Mohan",
+  "Designation": "Professor",
+  "Email": "rmohan@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. S. Jaya Nirmala",
+  "Designation": "Associate Professor",
+  "Email": "sjaya@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. Kunwar Singh",
+  "Designation": "Associate Professor",
+  "Email": "kunwar@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. E. Sivasankar",
+  "Designation": "Associate Professor",
+  "Email": "sivasankar@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. B. Nithya",
+  "Designation": "Assistant Professor",
+  "Email": "nithya@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. B. Shameedha Begum",
+  "Designation": "Assistant Professor",
+  "Email": "shameedha@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. M. Sridevi",
+  "Designation": "Assistant Professor",
+  "Email": "msridevi@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. A. Santhanavijayan",
+  "Designation": "Assistant Professor",
+  "Email": "vijayana@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. M. Brindha",
+  "Designation": "Assistant Professor",
+  "Email": "brindham@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. Rajeswari Sridhar",
+  "Designation": "Assistant Professor",
+  "Email": "srajeswari@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. Sitara K",
+  "Designation": "Assistant Professor",
+  "Email": "sitara@nitt.edu"
+ },
+ {
+  "Department": "Computer Science and Engineering",
+  "Name": "Dr. Madhukrishna Priyadarsini",
+  "Designation": "Assistant Professor",
+  "Email": "priyadarsini@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. G. Swaminathan",
+  "Designation": "Professor (HAG)",
+  "Email": "gs@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. Samson Mathew",
+  "Designation": "Professor",
+  "Email": "sams@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. K. Baskar",
+  "Designation": "Professor",
+  "Email": "kbaskar@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. S. T. Ramesh",
+  "Designation": "Professor",
+  "Email": "stramesh@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. K. Muthukkumaran",
+  "Designation": "Professor",
+  "Email": "kmk@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. S. Jayalekshmi",
+  "Designation": "Associate Professor",
+  "Email": "jaya@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. R. Gandhimathi",
+  "Designation": "Associate Professor",
+  "Email": "rgmathii@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. Nisha Radhakrishnan",
+  "Designation": "Associate Professor",
+  "Email": "nisha@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. V. Sunitha",
+  "Designation": "Associate Professor",
+  "Email": "sunitha@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. R. Manjula",
+  "Designation": "Associate Professor",
+  "Email": "manju@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. Deendayal Rathod",
+  "Designation": "Associate Professor",
+  "Email": "deendayal@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. S. Saravanan",
+  "Designation": "Associate Professor",
+  "Email": "ssaravanan@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. R. Senthil Kumar",
+  "Designation": "Associate Professor",
+  "Email": "senthilr@nitt.edu"
+ },
+ {
+  "Department": "Civil Engineering",
+  "Name": "Dr. S. Marisamynathan",
+  "Designation": "Associate Professor",
+  "Email": "marisamy@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. K. Sundareswaran",
+  "Designation": "Professor (HAG)",
+  "Email": "kse@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. C. Nagamani",
+  "Designation": "Professor (HAG)",
+  "Email": "\tcnmani@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. S. Arul Daniel",
+  "Designation": "Professor (HAG)",
+  "Email": "daniel@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. N. Kumaresan",
+  "Designation": "Professor",
+  "Email": "nkumar@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. S. Sudha",
+  "Designation": "Professor",
+  "Email": "sudha@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. V. Sankaranarayanan",
+  "Designation": "Professor",
+  "Email": "vsankar@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. M. Jaya Bharata Reddy",
+  "Designation": "Professor",
+  "Email": "jbreddy@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. M.P. Selvan",
+  "Designation": "Associate Professor",
+  "Email": "selvanmp@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. Sishaj P. Simon",
+  "Designation": "Associate Professor",
+  "Email": "sishajpsimon@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. G. Saravana Ilango",
+  "Designation": "Associate Professor",
+  "Email": "gsilango@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. M. Venkata Kirthiga",
+  "Designation": "Associate Professor",
+  "Email": "mvkirthiga@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. S. Moorthi",
+  "Designation": "Associate Professor",
+  "Email": "srimoorthi@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. S. Senthil Kumar",
+  "Designation": "Associate Professor",
+  "Email": "skumar@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. P. Raja",
+  "Designation": "Associate Professor",
+  "Email": "praja@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. P. Srinivasa Rao Nayak",
+  "Designation": "Associate Professor",
+  "Email": "psnayak@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. S. Mageshwari",
+  "Designation": "Associate Professor",
+  "Email": "mageshwari@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. Shelas Sathyan",
+  "Designation": "Associate Professor",
+  "Email": "shelassathyan@nitt.edu"
+ },
+ {
+  "Department": "Electrical and Electronics Engineering",
+  "Name": "Dr. Josephine R. L.",
+  "Designation": "Associate Professor",
+  "Email": "josephinerl@nitt.edu"
+ },
+ {
+  "Department": "Mechanical Engineering",
+  "Name": "Dr. Suman Dutta",
+  "Designation": "Assistant Professor",
+  "Email": "suman@nitt.edu"
+ },
+ {
+  "Department": "Mechanical Engineering",
+  "Name": "Dr. N. Siva Shanmugam",
+  "Designation": "Professor",
+  "Email": "nsiva@nitt.edu"
+ },
+ {
+  "Department": "Mechanical Engineering",
+  "Name": "Dr. AR. Veerappan",
+  "Designation": "Professor",
+  "Email": "aveer@nitt.edu"
+ },
+ {
+  "Department": "Mechanical Engineering",
+  "Name": "Dr. R.B. Anand",
+  "Designation": "Professor",
+  "Email": "rbanand@nitt.edu"
+ },
+ {
+  "Department": "Mechanical Engineering",
+  "Name": "Dr. K.R. Balasubramanian",
+  "Designation": "Assistant Professor",
+  "Email": "krbala@nitt.edu"
+ },
+ {
+  "Department": "Mechanical Engineering",
+  "Name": "Mr. V. Mariappan",
+  "Designation": "Assistant Professor",
+  "Email": "vmari@nitt.edu"
+ },
+ {
+  "Department": "Mechanical Engineering",
+  "Name": "Dr.K.Sankaranarayanasamy",
+  "Designation": "Professor",
+  "Email": "ksnsamy@nitt.edu"
+ },
+ {
+  "Department": "Architecture",
+  "Name": "Ar. G. Dinesh",
+  "Designation": "Assistant Professor",
+  "Email": "dinesh@nitt.edu"
+ },
+ {
+  "Department": "Architecture",
+  "Name": "Dr. V. Ramesh",
+  "Designation": "Professor & Head",
+  "Email": "vramesh@nitt.edu"
+ },
+ {
+  "Department": "Architecture",
+  "Name": "Dr. R. Pradeep",
+  "Designation": "Associate Professor",
+  "Email": "pradeep@nitt.edu"
+ },
+ {
+  "Department": "Architecture",
+  "Name": "Dr. M. Rajarajan",
+  "Designation": "Assistant Professor",
+  "Email": "rajarajan@nitt.edu"
+ },
+ {
+  "Department": "Architecture",
+  "Name": "Ar. M. M. Meenakshi",
+  "Designation": "Assistant Professor",
+  "Email": "meenakshi@nitt.edu"
+ },
+ {
+  "Department": "Architecture",
+  "Name": "Ar. R. Nivedita",
+  "Designation": "Assistant Professor",
+  "Email": "nivedita@nitt.edu"
+ },
+ {
+  "Department": "Architecture",
+  "Name": "Ar. B. Sowmya",
+  "Designation": "Assistant Professor",
+  "Email": "sowmya@nitt.edu"
+ },
+ {
+  "Department": "Architecture",
+  "Name": "Dr. R. Geetha",
+  "Designation": "Assistant Professor",
+  "Email": "geetha@nitt.edu"
+ }
+]

@@ -1,0 +1,327 @@
+<<<<<<< import ApplicationList from './components/Faculty-portal/ApplicationList';
+=======
+import ApplicationList from './components/Faculty-portal/ApplicationList';
+import StudentDetail from './components/Student-portal/student_detail';
+import DeptSelection from './components/Student-portal/dept_selection';
+import FacultySelection from './components/Student-portal/faculty_selection';
+>>>>>>> REPLACE
+
+<<<<<<< export default function FacultyPortal() {
+  const [currentView, setCurrentView] = useState('login');
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const [emailStatus, setEmailStatus] = useState('');
+  const [error, setError] = useState('');
+  const [loggedInFacultyEmail, setLoggedInFacultyEmail] = useState('');
+  const [loggedInFacultyDepartment, setLoggedInFacultyDepartment] = useState('');
+  const [applications, setApplications] = useState([]);
+
+  const fetchApplications = async () => {
+=======
+export default function FacultyPortal() {
+  const [currentView, setCurrentView] = useState('login');
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const [emailStatus, setEmailStatus] = useState('');
+  const [error, setError] = useState('');
+  const [loggedInFacultyEmail, setLoggedInFacultyEmail] = useState('');
+  const [loggedInFacultyDepartment, setLoggedInFacultyDepartment] = useState('');
+  const [applications, setApplications] = useState([]);
+
+  // New states for multi-step student submission
+  const [studentFormStep, setStudentFormStep] = useState(1);
+  const [studentFormData, setStudentFormData] = useState({});
+  const [studentFormErrors, setStudentFormErrors] = useState({});
+  const [submissionMessage, setSubmissionMessage] = useState('');
+  const [facultyByDepartment, setFacultyByDepartment] = useState({});
+
+  const fetchApplications = async () => {
+>>>>>>> REPLACE
+
+<<<<<<<   useEffect(() => {
+    fetchApplications();
+  }, [loggedInFacultyEmail, loggedInFacultyDepartment]);
+
+  const handleViewApplication = (application) => {
+    setSelectedApplication(application);
+    setCurrentView('applicationDetails');
+  };
+=======
+  useEffect(() => {
+    fetchApplications();
+  }, [loggedInFacultyEmail, loggedInFacultyDepartment]);
+
+  // Fetch faculty by department mapping for student form faculty selection
+  useEffect(() => {
+    const fetchFacultyList = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/faculty-list');
+        if (response.status >= 200 && response.status < 300) {
+          // Assuming response.data is array of faculty users with name, email, department
+          const mapping = {};
+          response.data.forEach(faculty => {
+            if (!mapping[faculty.department]) {
+              mapping[faculty.department] = [];
+            }
+            mapping[faculty.department].push({ name: faculty.facultyName, email: faculty.email });
+          });
+          setFacultyByDepartment(mapping);
+        }
+      } catch (err) {
+        console.error('Failed to fetch faculty list', err);
+      }
+    };
+    fetchFacultyList();
+  }, []);
+
+  const handleViewApplication = (application) => {
+    setSelectedApplication(application);
+    setCurrentView('applicationDetails');
+  };
+>>>>>>> REPLACE
+
+<<<<<<<   const handleLogout = () => {
+    setCurrentView('login');
+    setSelectedApplication(null);
+    setEmailStatus('');
+    setLoggedInFacultyEmail('');
+    setLoggedInFacultyDepartment('');
+  };
+
+  const switchToSignup = () => {
+    setCurrentView('signup');
+  };
+=======
+  const handleLogout = () => {
+    setCurrentView('login');
+    setSelectedApplication(null);
+    setEmailStatus('');
+    setLoggedInFacultyEmail('');
+    setLoggedInFacultyDepartment('');
+  };
+
+  const switchToSignup = () => {
+    setCurrentView('signup');
+  };
+
+  const switchToLogin = () => {
+    setCurrentView('login');
+  };
+
+  useEffect(() => {
+    const fetchFacultyDetails = async () => {
+      if (loggedInFacultyEmail) {
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/faculty?email=${encodeURIComponent(loggedInFacultyEmail)}`
+          );
+          if (response.status >= 200 && response.status < 300) {
+            const data = response.data;
+            setLoggedInFacultyDepartment(data.department || '');
+          } else {
+            setLoggedInFacultyDepartment('');
+          }
+        } catch (error) {
+          setLoggedInFacultyDepartment('');
+        }
+      }
+    };
+    fetchFacultyDetails();
+  }, [loggedInFacultyEmail]);
+
+  // Handlers for student form data changes
+  const handleStudentFormChange = (e) => {
+    const { name, value } = e.target;
+    setStudentFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleStudentFileChange = (e) => {
+    const { name, files } = e.target;
+    if (files && files.length > 0) {
+      setStudentFormData(prev => ({ ...prev, [name]: files[0] }));
+    }
+  };
+
+  const handleFacultySelect = (name, email) => {
+    setStudentFormData(prev => ({ ...prev, faculty: name, facultyEmail: email }));
+  };
+
+  // Submit student details to backend
+  const submitStudentDetails = async () => {
+    try {
+      const formData = new FormData();
+      for (const key in studentFormData) {
+        if (studentFormData[key] instanceof File) {
+          formData.append(key, studentFormData[key]);
+        } else {
+          formData.append(key, studentFormData[key]);
+        }
+      }
+      const response = await axios.post('http://localhost:5000/api/applications/submit-application', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      if (response.status === 201) {
+        setSubmissionMessage('Student details are submitted. Click Next.');
+        setStudentFormStep(2);
+      } else {
+        setError('Failed to submit student details');
+      }
+    } catch (err) {
+      setError('Failed to submit student details');
+    }
+  };
+
+  // Navigation handlers for multi-step form
+  const handleNextFromDept = () => {
+    setStudentFormStep(3);
+  };
+
+  const handleDone = () => {
+    setSubmissionMessage('Application submitted. Submit another application.');
+    setStudentFormStep(1);
+    setStudentFormData({});
+  };
+>>>>>>> REPLACE
+
+<<<<<<<   return (
+    <>
+      {emailStatus && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-800">
+            {emailStatus}
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
+            {error}
+          </div>
+        </div>
+      )}
+
+      {submissionMessage && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 flex justify-between items-center">
+            <span>{submissionMessage}</span>
+            {studentFormStep === 1 && (
+              <button
+                onClick={submitStudentDetails}
+                className="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Submit
+              </button>
+            )}
+            {studentFormStep === 2 && (
+              <button
+                onClick={handleNextFromDept}
+                className="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Next
+              </button>
+            )}
+            {studentFormStep === 3 && (
+              <button
+                onClick={handleDone}
+                className="ml-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Done
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {currentView === 'login' && (
+        <Login
+          onLoginSuccess={(email) => {
+            setLoggedInFacultyEmail(email);
+            setCurrentView('applications');
+          }}
+          switchToSignup={switchToSignup}
+          setError={setError}
+        />
+      )}
+
+      {currentView === 'signup' && (
+        <Signup
+          onSignupSuccess={switchToLogin}
+          switchToLogin={switchToLogin}
+          setError={setError}
+        />
+      )}
+
+      {currentView === 'applications' && studentFormStep === 1 && (
+        <ErrorBoundary>
+          <StudentDetail
+            formData={studentFormData}
+            handleChange={handleStudentFormChange}
+            handleFileChange={handleStudentFileChange}
+            errors={studentFormErrors}
+          />
+        </ErrorBoundary>
+      )}
+
+      {currentView === 'applications' && studentFormStep === 2 && (
+        <ErrorBoundary>
+          <DeptSelection
+            formData={studentFormData}
+            handleChange={handleStudentFormChange}
+            departments={Object.keys(facultyByDepartment)}
+            errors={studentFormErrors}
+          />
+        </ErrorBoundary>
+      )}
+
+      {currentView === 'applications' && studentFormStep === 3 && (
+        <ErrorBoundary>
+          <FacultySelection
+            formData={studentFormData}
+            handleFacultySelect={handleFacultySelect}
+            facultyByDepartment={facultyByDepartment}
+            errors={studentFormErrors}
+          />
+        </ErrorBoundary>
+      )}
+
+      {currentView === 'applications' && studentFormStep === 4 && (
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 text-center">
+          <p className="text-green-700 font-semibold text-lg">
+            Application submitted. Submit another application.
+          </p>
+          <button
+            onClick={() => {
+              setStudentFormStep(1);
+              setStudentFormData({});
+              setSubmissionMessage('');
+            }}
+            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Submit Another Application
+          </button>
+        </div>
+      )}
+
+      {currentView === 'applications' && studentFormStep === 0 && (
+        <ErrorBoundary>
+          <ApplicationList
+            onViewApplication={handleViewApplication}
+            onAccept={handleAcceptApplication}
+            onDecline={handleDeclineApplication}
+            facultyEmail={loggedInFacultyEmail}
+            facultyDepartment={loggedInFacultyDepartment}
+          />
+        </ErrorBoundary>
+      )}
+
+      {currentView === 'applicationDetails' && selectedApplication && (
+        <ApplicationDetails
+          application={selectedApplication}
+          onAccept={handleAcceptApplication}
+          onDecline={handleDeclineApplication}
+          onGoBack={() => setCurrentView('applications')}
+          onLogout={handleLogout}
+        />
+      )}
+    </>
+  );
+}

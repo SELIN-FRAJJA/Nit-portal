@@ -1,0 +1,345 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import ApplicationList from './ApplicationList'; // your existing component
+
+export default function FacultyDashboard({ facultyEmail, facultyDepartment, onLogout }) {
+  const [activeTab, setActiveTab] = useState('applications'); // or 'internshipForm'
+  const [internshipData, setInternshipData] = useState(null); // existing internship offering data
+  const [loading, setLoading] = useState(false);
+  const [formState, setFormState] = useState({
+    offerInternship: '', // 'Yes' or 'No'
+    domains: '',
+    paid: '', // 'Paid' or 'Unpaid'
+    startDate: '',
+    endDate: '',
+  });
+  const [error, setError] = useState(null);
+  const [formSubmitting, setFormSubmitting] = useState(false);
+
+  // Fetch existing internship offering data on mount or facultyEmail change
+  useEffect(() => {
+    if (!facultyEmail) return;
+
+    const fetchInternshipOffering = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await axios.get(`http://localhost:5000/api/faculty?email=${encodeURIComponent(facultyEmail)}`);
+        if (res.data && res.data.internshipOffering) {
+          const offering = res.data.internshipOffering;
+          setInternshipData(offering);
+          setFormState({
+            offerInternship: 'Yes',
+            domains: offering.domains ? offering.domains.join(', ') : '',
+            paid: offering.paid || '',
+            startDate: offering.startDate ? offering.startDate.slice(0, 10) : '',
+            endDate: offering.endDate ? offering.endDate.slice(0, 10) : '',
+          });
+        } else {
+          setInternshipData(null);
+          setFormState({
+            offerInternship: 'No',
+            domains: '',
+            paid: '',
+            startDate: '',
+            endDate: '',
+          });
+        }
+      } catch (err) {
+        setError('Failed to load internship offering data.');
+        setInternshipData(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInternshipOffering();
+  }, [facultyEmail]);
+
+  // Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormState(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Submit form handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // If user selected No internship offering, send null to backend to clear offering
+    if (formState.offerInternship === 'No') {
+      setError(null);
+      setFormSubmitting(true);
+      try {
+        const payload = {
+          email: facultyEmail,
+          internshipOffering: null,
+        };
+        const res = await axios.post('http://localhost:5000/api/faculty/internship-form', payload);
+        setInternshipData(null);
+        setError(null);
+      } catch (err) {
+        setError('Failed to clear internship offering.');
+      } finally {
+        setFormSubmitting(false);
+      }
+      return;
+    }
+
+    // Validation for "Yes" case
+    if (
+      !formState.domains.trim() ||
+      !formState.paid ||
+      !formState.startDate ||
+      !formState.endDate
+    ) {
+      setError('Please fill all fields.');
+      return;
+    }
+
+    // Check startDate < endDate
+    if (new Date(formState.startDate) > new Date(formState.endDate)) {
+      setError('Start date cannot be after end date.');
+      return;
+    }
+
+    setError(null);
+    setFormSubmitting(true);
+
+    try {
+      const payload = {
+        email: facultyEmail,
+        internshipOffering: {
+          domains: formState.domains.split(',').map(d => d.trim()).filter(Boolean),
+          paid: formState.paid,
+          startDate: formState.startDate,
+          endDate: formState.endDate,
+        },
+      };
+
+      const res = await axios.post('http://localhost:5000/api/faculty/internship-form', payload);
+
+      if (res.data && res.data.faculty && res.data.faculty.internshipOffering) {
+        setInternshipData(res.data.faculty.internshipOffering);
+      } else {
+        setInternshipData(null);
+      }
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to submit the internship offering form.');
+    } finally {
+      setFormSubmitting(false);
+    }
+  };
+
+  // Edit button handler
+  const handleEdit = () => {
+    setError(null);
+    setActiveTab('internshipForm');
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Faculty Dashboard</h1>
+        <button
+          onClick={onLogout}
+          className="text-red-600 hover:text-red-800 font-semibold"
+          title="Logout"
+        >
+          Logout
+        </button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-6">
+        <button
+          className={`px-4 py-2 -mb-px border-b-2 font-medium ${
+            activeTab === 'applications'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+          onClick={() => setActiveTab('applications')}
+        >
+          Applications
+        </button>
+        <button
+          className={`ml-4 px-4 py-2 -mb-px border-b-2 font-medium ${
+            activeTab === 'internshipForm'
+              ? 'border-indigo-600 text-indigo-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          }`}
+          onClick={() => setActiveTab('internshipForm')}
+        >
+          Internship Offering Form
+        </button>
+      </div>
+
+      {/* Tab Contents */}
+      {activeTab === 'applications' && (
+        <ApplicationList
+          facultyEmail={facultyEmail}
+          facultyDepartment={facultyDepartment}
+          onLogout={onLogout}
+          onViewApplication={(app) => alert(`Viewing application for ${app.name}`)} // Customize as needed
+        />
+      )}
+
+      {activeTab === 'internshipForm' && (
+        <div>
+          {loading ? (
+            <p>Loading internship offering...</p>
+          ) : internshipData && formState.offerInternship === 'Yes' ? (
+            // Show summary + edit button if offerInternship=Yes and data exists
+            <div className="bg-white p-6 rounded shadow max-w-lg">
+              <h2 className="text-2xl font-semibold mb-4">Your Internship Offering</h2>
+              <p><strong>Domains:</strong> {internshipData.domains.join(', ')}</p>
+              <p><strong>Paid/Unpaid:</strong> {internshipData.paid}</p>
+              <p><strong>Start Date:</strong> {new Date(internshipData.startDate).toLocaleDateString()}</p>
+              <p><strong>End Date:</strong> {new Date(internshipData.endDate).toLocaleDateString()}</p>
+              <button
+                onClick={handleEdit}
+                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              >
+                Edit
+              </button>
+            </div>
+          ) : formState.offerInternship === 'No' ? (
+            <div className="bg-white p-6 rounded shadow max-w-lg text-center">
+              <h2 className="text-xl font-semibold mb-4">No Internship Offering Currently</h2>
+              <p>You have chosen not to offer internships at this time.</p>
+              <button
+                onClick={handleEdit}
+                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              >
+                Change Decision
+              </button>
+            </div>
+          ) : (
+            // Show form inputs when "Yes" selected or first time loading (offerInternship empty)
+            <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow max-w-lg space-y-6">
+              <h2 className="text-2xl font-semibold">Internship Offering Form</h2>
+              {error && <p className="text-red-600">{error}</p>}
+
+              {/* Offer Internship Yes/No */}
+              <div>
+                <label className="block font-medium mb-2">Do you want to offer internships?</label>
+                <label className="inline-flex items-center mr-6">
+                  <input
+                    type="radio"
+                    name="offerInternship"
+                    value="Yes"
+                    checked={formState.offerInternship === 'Yes'}
+                    onChange={handleChange}
+                    required
+                  />
+                  <span className="ml-2">Yes</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="offerInternship"
+                    value="No"
+                    checked={formState.offerInternship === 'No'}
+                    onChange={handleChange}
+                  />
+                  <span className="ml-2">No</span>
+                </label>
+              </div>
+
+              {/* Show form fields only if "Yes" */}
+              {formState.offerInternship === 'Yes' && (
+                <>
+                  {/* Domains text input */}
+                  <div>
+                    <label className="block font-medium mb-2" htmlFor="domains">
+                      Internship Domains (comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      id="domains"
+                      name="domains"
+                      value={formState.domains}
+                      onChange={handleChange}
+                      placeholder="e.g. Web Development, Data Science"
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      required
+                    />
+                  </div>
+
+                  {/* Paid / Unpaid radio buttons */}
+                  <div>
+                    <label className="block font-medium mb-2">Paid or Unpaid:</label>
+                    <label className="inline-flex items-center mr-6">
+                      <input
+                        type="radio"
+                        name="paid"
+                        value="Paid"
+                        checked={formState.paid === 'Paid'}
+                        onChange={handleChange}
+                        required
+                      />
+                      <span className="ml-2">Paid</span>
+                    </label>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        name="paid"
+                        value="Unpaid"
+                        checked={formState.paid === 'Unpaid'}
+                        onChange={handleChange}
+                      />
+                      <span className="ml-2">Unpaid</span>
+                    </label>
+                  </div>
+
+                  {/* Start Date */}
+                  <div>
+                    <label className="block font-medium mb-2" htmlFor="startDate">
+                      Start Date:
+                    </label>
+                    <input
+                      type="date"
+                      id="startDate"
+                      name="startDate"
+                      value={formState.startDate}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      required
+                    />
+                  </div>
+
+                  {/* End Date */}
+                  <div>
+                    <label className="block font-medium mb-2" htmlFor="endDate">
+                      End Date:
+                    </label>
+                    <input
+                      type="date"
+                      id="endDate"
+                      name="endDate"
+                      value={formState.endDate}
+                      onChange={handleChange}
+                      className="border border-gray-300 rounded px-3 py-2 w-full"
+                      required
+                    />
+                  </div>
+                </>
+              )}
+
+              <button
+                type="submit"
+                disabled={formSubmitting}
+                className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {formSubmitting ? 'Submitting...' : 'Submit'}
+              </button>
+            </form>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
