@@ -56,12 +56,7 @@ export default function StepFour({ formData, handleChange, handleFileChange, err
       <div className="bg-gray-50 p-4 rounded-md space-y-4">
         <h3 className="font-medium text-gray-700 border-b pb-2">Internship Preferences</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-          <p className="text-gray-600">
-            <span className="font-medium">Start Date:</span> {formData.startDate || '—'}
-          </p>
-          <p className="text-gray-600">
-            <span className="font-medium">End Date:</span> {formData.endDate || '—'}
-          </p>
+          
           <p className="text-gray-600">
             <span className="font-medium">Accommodation Type:</span> {formData.studentType || '—'}
           </p>

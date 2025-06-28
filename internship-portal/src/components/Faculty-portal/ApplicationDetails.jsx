@@ -17,6 +17,7 @@ export default function ApplicationDetails({
   onDecline,
   onGoBack,
   onLogout,
+  isAcceptanceOpen,
 }) {
   const handleAccept = async () => {
     try {
@@ -166,23 +167,31 @@ export default function ApplicationDetails({
             </div>
           </section>
 
-          {/* Action Buttons */}
-          <div className="flex justify-center space-x-6 mt-8">
-            <button
-              onClick={handleAccept}
-              className="flex items-center space-x-2 bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700"
-            >
-              <Check className="w-5 h-5" />
-              <span>Accept</span>
-            </button>
-            <button
-              onClick={handleDecline}
-              className="flex items-center space-x-2 bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700"
-            >
-              <X className="w-5 h-5" />
-              <span>Decline</span>
-            </button>
-          </div>
+          {/* Conditional Action Buttons Based on Acceptance Window */}
+          {isAcceptanceOpen ? (
+            <div className="flex justify-center space-x-6 mt-8">
+              <button
+                onClick={handleAccept}
+                className="flex items-center space-x-2 bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700"
+              >
+                <Check className="w-5 h-5" />
+                <span>Accept</span>
+              </button>
+              <button
+                onClick={handleDecline}
+                className="flex items-center space-x-2 bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700"
+              >
+                <X className="w-5 h-5" />
+                <span>Decline</span>
+              </button>
+            </div>
+          ) : (
+            <div className="mt-8 text-center">
+              <p className="text-gray-500 text-lg">
+                The acceptance window has closed. No further changes can be made.
+              </p>
+            </div>
+          )}
         </div>
       </main>
     </div>

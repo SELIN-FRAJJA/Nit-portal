@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ApplicationList from './ApplicationList';
 import axios from 'axios';
+import ReportsTab from './ReportsTab';
+import AcceptedStudentsTab from './AcceptedStudentsTab.jsx';
 
 export default function FacultyDashboard({
   facultyEmail,
@@ -9,8 +11,10 @@ export default function FacultyDashboard({
   onViewApplication,
   onAccept,
   onDecline,
+  activeTab,
+  setActiveTab
 }) {
-  const [activeTab, setActiveTab] = useState('applications');
+  // State variables
   const [internshipData, setInternshipData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -20,7 +24,7 @@ export default function FacultyDashboard({
 
   const [formState, setFormState] = useState({
     offerInternship: '', // 'Yes' | 'No'
-    domains: '',
+    domains: ['', '', '', '', ''],
     paid: '',            // 'Paid' | 'Unpaid'
     startDate: '',
     endDate: '',
@@ -39,7 +43,9 @@ export default function FacultyDashboard({
           setInternshipData(off);
           setFormState({
             offerInternship: 'Yes',
-            domains: (off.domains || []).join(', '),
+            domains: Array.isArray(off.domains)
+              ? [...off.domains, '', '', '', '', ''].slice(0, 5)
+              : ['', '', '', '', ''],
             paid: off.paid || '',
             startDate: off.startDate?.slice(0, 10) || '',
             endDate: off.endDate?.slice(0, 10) || '',
@@ -83,11 +89,12 @@ export default function FacultyDashboard({
     }
 
     const { domains, paid, startDate, endDate } = formState;
-    if (!domains.trim() || !paid || !startDate || !endDate) {
+    if (!Array.isArray(domains) || !domains.filter(Boolean).length || !paid || !startDate || !endDate) {
       setError('Please fill in all fields.');
       setFormSubmitting(false);
       return;
     }
+
     if (new Date(startDate) > new Date(endDate)) {
       setError('Start date cannot be after end date.');
       setFormSubmitting(false);
@@ -97,7 +104,7 @@ export default function FacultyDashboard({
     try {
       const payload = {
         email: facultyEmail,
-        domains: domains.split(',').map(d => d.trim()).filter(Boolean),
+        domains: domains.filter(Boolean),
         paid,
         startDate,
         endDate,
@@ -116,28 +123,41 @@ export default function FacultyDashboard({
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-8 text-black">
         <h1 className="text-3xl font-bold">Faculty Dashboard</h1>
         <button onClick={onLogout} className="text-red-600 hover:text-red-800">
           Logout
         </button>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b mb-6">
+      {/* Tabs - Use props for activeTab/setActiveTab */}
+      <div className="flex mb-6">
+        <button
+          onClick={() => setActiveTab('internshipForm')}
+          className={`${activeTab === 'internshipForm' ? 'border-indigo-600 text-indigo-600' : 'text-white'} ml-4 px-4 py-2 -mb-px border-b-2`}
+        >
+          Internship Offering Form
+        </button>
+
         <button
           onClick={() => setActiveTab('applications')}
-          className={`${activeTab === 'applications' ? 'border-indigo-600 text-indigo-600' : 'text-gray-500'}
-            px-4 py-2 -mb-px border-b-2`}
+          className={`${activeTab === 'applications' ? 'border-indigo-600 text-indigo-600' : 'text-white'} ml-4 px-4 py-2 -mb-px border-b-2`}
         >
           Applications
         </button>
+
         <button
-          onClick={() => setActiveTab('internshipForm')}
-          className={`${activeTab === 'internshipForm' ? 'border-indigo-600 text-indigo-600' : 'text-gray-500'}
-            ml-4 px-4 py-2 -mb-px border-b-2`}
+          onClick={() => setActiveTab('accepted')}
+          className={`${activeTab === 'accepted' ? 'border-indigo-600 text-indigo-600' : 'text-white'} ml-4 px-4 py-2 -mb-px border-b-2`}
         >
-          Internship Offering Form
+          Accepted Students
+        </button>
+
+        <button
+          onClick={() => setActiveTab('reports')}
+          className={`${activeTab === 'reports' ? 'border-indigo-600 text-indigo-600' : 'text-white'} ml-4 px-4 py-2 -mb-px border-b-2`}
+        >
+          Reports
         </button>
       </div>
 
@@ -162,8 +182,8 @@ export default function FacultyDashboard({
             <>
               {/* Summary View */}
               {!isEditing && internshipData && (
-                <div className="bg-white p-6 rounded shadow max-w-lg">
-                  <h2 className="text-2xl font-semibold mb-4">Your Current Internship Offering</h2>
+                <div className="bg-white p-6 rounded shadow max-w-lg text-black">
+                  <h2 className="text-2xl font-semibold mb-4 text-black">Your Current Internship Offering</h2>
                   <p><strong>Domains:</strong> {internshipData.domains.join(', ')}</p>
                   <p><strong>Type:</strong> {internshipData.paid}</p>
                   <p><strong>Duration:</strong> {new Date(internshipData.startDate).toLocaleDateString()} to {new Date(internshipData.endDate).toLocaleDateString()}</p>
@@ -179,7 +199,7 @@ export default function FacultyDashboard({
 
               {/* No-Offering View */}
               {!isEditing && !internshipData && (
-                <div className="bg-white p-6 rounded shadow max-w-lg text-center">
+                <div className="bg-white p-6 rounded shadow max-w-lg text-center text-black">
                   <h2 className="text-xl font-semibold mb-4">No Active Internship Offering</h2>
                   <p className="text-gray-600">You have not submitted any internship offering yet. You can choose to offer or skip.</p>
                   <button
@@ -197,13 +217,13 @@ export default function FacultyDashboard({
                   onSubmit={handleSubmit}
                   className="bg-white p-6 rounded shadow max-w-lg space-y-6"
                 >
-                  <h2 className="text-2xl font-semibold">Internship Offering Form</h2>
+                  <h2 className="text-2xl font-semibold text-black">Internship Offering Form</h2>
                   {error && <p className="text-red-600">{error}</p>}
                   {successMessage && <p className="text-green-600">{successMessage}</p>}
 
                   {/* Yes/No Choice */}
                   <div>
-                    <label className="block font-medium mb-2">
+                    <label className="block font-medium mb-2 text-black">
                       Do you want to offer internships?
                     </label>
                     <label className="inline-flex items-center mr-6">
@@ -215,7 +235,7 @@ export default function FacultyDashboard({
                         onChange={handleChange}
                         required
                       />
-                      <span className="ml-2">Yes</span>
+                      <span className="ml-2 text-black">Yes</span>
                     </label>
                     <label className="inline-flex items-center">
                       <input
@@ -225,7 +245,7 @@ export default function FacultyDashboard({
                         checked={formState.offerInternship === 'No'}
                         onChange={handleChange}
                       />
-                      <span className="ml-2">No</span>
+                      <span className="ml-2 text-black">No</span>
                     </label>
                   </div>
 
@@ -233,20 +253,30 @@ export default function FacultyDashboard({
                   {formState.offerInternship === 'Yes' && (
                     <>
                       <div>
-                        <label htmlFor="domains" className="block font-medium mb-2">
-                          Domains (comma-separated)
+                        <label className="block font-medium mb-2 text-black">
+                          Domains (up to 5)
                         </label>
-                        <input
-                          id="domains"
-                          name="domains"
-                          value={formState.domains}
-                          onChange={handleChange}
-                          className="border border-gray-300 rounded px-3 py-2 w-full"
-                          required
-                        />
+                        <div className="grid grid-cols-1 gap-2">
+                          {formState.domains.map((domain, idx) => (
+                            <input
+                              key={idx}
+                              type="text"
+                              placeholder={`Domain ${idx + 1}`}
+                              value={domain}
+                              onChange={e => {
+                                const updatedDomains = [...formState.domains];
+                                updatedDomains[idx] = e.target.value;
+                                setFormState(prev => ({ ...prev, domains: updatedDomains }));
+                              }}
+                              className="border border-gray-300 rounded px-3 py-2 w-full"
+                              required={idx === 0} // Make first domain required
+                            />
+                          ))}
+                        </div>
                       </div>
+
                       <div>
-                        <label className="block font-medium mb-2">Paid or Unpaid:</label>
+                        <label className="block font-medium mb-2 text-black">Paid or Unpaid:</label>
                         <label className="inline-flex items-center mr-6">
                           <input
                             type="radio"
@@ -256,7 +286,7 @@ export default function FacultyDashboard({
                             onChange={handleChange}
                             required
                           />
-                          <span className="ml-2">Paid</span>
+                          <span className="ml-2 text-black">Paid</span>
                         </label>
                         <label className="inline-flex items-center">
                           <input
@@ -266,11 +296,11 @@ export default function FacultyDashboard({
                             checked={formState.paid === 'Unpaid'}
                             onChange={handleChange}
                           />
-                          <span className="ml-2">Unpaid</span>
+                          <span className="ml-2 text-black">Unpaid</span>
                         </label>
                       </div>
                       <div>
-                        <label htmlFor="startDate" className="block font-medium mb-2">
+                        <label htmlFor="startDate" className="block font-medium mb-2 text-black">
                           Start Date
                         </label>
                         <input
@@ -284,7 +314,7 @@ export default function FacultyDashboard({
                         />
                       </div>
                       <div>
-                        <label htmlFor="endDate" className="block font-medium mb-2">
+                        <label htmlFor="endDate" className="block font-medium mb-2 text-black">
                           End Date
                         </label>
                         <input
@@ -313,6 +343,14 @@ export default function FacultyDashboard({
           )}
         </div>
       )}
+
+      {activeTab === 'reports' && (
+        <ReportsTab facultyEmail={facultyEmail} />
+      )}
+      {activeTab === 'accepted' && (
+        <AcceptedStudentsTab facultyEmail={facultyEmail} />
+      )}
+
     </div>
   );
 }

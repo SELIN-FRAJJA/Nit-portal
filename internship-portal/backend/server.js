@@ -27,6 +27,7 @@ const storage = multer.diskStorage({
     if (file.fieldname === 'aadhaarFile') uploadPath = 'uploads/aadhar/';
     else if (file.fieldname === 'nocFile') uploadPath = 'uploads/noc/';
     else if (file.fieldname === 'idCardFile') uploadPath = 'uploads/idcard/';
+    else if (file.fieldname === 'reportFile') uploadPath = 'uploads/reports/';
     else if (file.fieldname === 'resumeFile') uploadPath = 'uploads/resume/';
     if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
@@ -74,8 +75,15 @@ const ApplicationSchema = new mongoose.Schema({
   idCardUrl: String,
   resumeUrl: String,
   nocUrl: String,
-  status: { type: String, default: 'pending' }
+  isFinalized: { type: Boolean, default: false },
+  finalizedAt: Date,
+  status: { type: String, default: 'pending' },
+  hasJoined: { type: Boolean, default: false }
 });
+
+// Add to server.js after schema definitions
+ApplicationSchema.index({ email: 1, isFinalized: 1, isFinalized: 1 });
+// Add to the Application model
 const Application = mongoose.model('Application', ApplicationSchema);
 
 const InternshipOfferingSchema = new mongoose.Schema({
@@ -108,6 +116,13 @@ const FacultyUserSchema = new mongoose.Schema({
     default: null,
   }
 });
+
+const AcceptanceWindowSchema = new mongoose.Schema({
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true }
+});
+const AcceptanceWindow = mongoose.model('AcceptanceWindow', AcceptanceWindowSchema);
+
 const FacultyUser = mongoose.model('FacultyUser', FacultyUserSchema);
 
 const StudentUserSchema = new mongoose.Schema({
@@ -147,6 +162,35 @@ const SubmissionWindowSchema = new mongoose.Schema({
 
 const  SubmissionWindow =mongoose.model('SubmissionWindow', SubmissionWindowSchema);
 
+// 1. Schema
+const ResultWindowSchema = new mongoose.Schema({
+  startDate: { type: Date, required: true },
+  endDate:   { type: Date, required: true },
+}, { timestamps: true });
+
+const ResultWindow = mongoose.model('ResultWindow', ResultWindowSchema);
+
+// 2. Admin sets result window
+app.post('/api/admin/result-window', async (req, res) => {
+  const { startDate, endDate } = req.body;
+  if (new Date(startDate) >= new Date(endDate)) {
+    return res.status(400).json({ error: 'Start must be before end.' });
+  }
+  const window = await ResultWindow.findOneAndUpdate(
+    {}, { startDate, endDate }, { upsert: true, new: true }
+  );
+  res.json(window);
+});
+
+// 3. Student fetches result window status
+app.get('/api/result-window', async (req, res) => {
+  const window = await ResultWindow.findOne({});
+  if (!window) return res.json({ showResult: false });
+  const now = new Date();
+  const showResult = now >= window.startDate && now <= window.endDate;
+  res.json({ showResult, startDate: window.startDate, endDate: window.endDate });
+});
+
 // set time frame 
 app.post('/api/admin/window', async (req, res) => {
   const { startDate, endDate } = req.body;
@@ -163,7 +207,179 @@ app.post('/api/admin/window', async (req, res) => {
   res.json(window);
 });
 
+// Add after ResultWindowSchema
+const StudentAppWindowSchema = new mongoose.Schema({
+  startDate: { type: Date, required: true },
+  endDate:   { type: Date, required: true },
+}, { timestamps: true });
 
+const StudentAppWindow = mongoose.model('StudentAppWindow', StudentAppWindowSchema);
+
+// Admin sets student application window
+app.post('/api/admin/student-app-window', async (req, res) => {
+  const { startDate, endDate } = req.body;
+  if (new Date(startDate) >= new Date(endDate)) {
+    return res.status(400).json({ error: 'Start must be before end.' });
+  }
+  const window = await StudentAppWindow.findOneAndUpdate(
+    {}, { startDate, endDate }, { upsert: true, new: true }
+  );
+  res.json(window);
+});
+
+// Student checks application window status
+app.get('/api/student-app-window', async (req, res) => {
+  const window = await StudentAppWindow.findOne({});
+  if (!window) return res.json({ showApplication: false, message: 'Application window not configured' });
+  
+  const now = new Date();
+  const showApplication = now >= window.startDate && now <= window.endDate;
+  
+  res.json({ 
+    showApplication,
+    message: showApplication 
+      ? 'Application window is open' 
+      : now < window.startDate 
+        ? `Application window opens on ${window.startDate.toDateString()}`
+        : `Application window closed on ${window.endDate.toDateString()}`,
+    startDate: window.startDate,
+    endDate: window.endDate
+  });
+});
+
+// Add ReportWindow schema
+const ReportWindowSchema = new mongoose.Schema({
+  startDate: { type: Date, required: true },
+  endDate: { type: Date, required: true },
+}, { timestamps: true });
+const ReportWindow = mongoose.model('ReportWindow', ReportWindowSchema);
+
+// Add Report schema
+const ReportSchema = new mongoose.Schema({
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'StudentUser', required: true },
+  facultyEmail: { type: String, required: true },
+  title: { type: String, required: true },
+  domain: { type: String, required: true },
+  reportUrl: { type: String, required: true },
+  remarks: String,
+  submittedAt: { type: Date, default: Date.now }
+});
+const Report = mongoose.model('Report', ReportSchema);
+
+// Admin sets report window
+app.post('/api/admin/report-window', async (req, res) => {
+  const { startDate, endDate } = req.body;
+  if (new Date(startDate) >= new Date(endDate)) {
+    return res.status(400).json({ error: 'Start must be before end.' });
+  }
+  const window = await ReportWindow.findOneAndUpdate(
+    {}, { startDate, endDate }, { upsert: true, new: true }
+  );
+  res.json(window);
+});
+
+// Get report window
+app.get('/api/report-window', async (req, res) => {
+  const window = await ReportWindow.findOne({});
+  if (!window) return res.json({ showReport: false });
+  const now = new Date();
+  const showReport = now >= window.startDate && now <= window.endDate;
+  res.json({ 
+    showReport,
+    message: showReport 
+      ? 'Report submission window is open' 
+      : now < window.startDate 
+        ? `Report submission opens on ${window.startDate.toDateString()}`
+        : `Report submission closed on ${window.endDate.toDateString()}`,
+    startDate: window.startDate,
+    endDate: window.endDate
+  });
+});
+
+// Submit report
+app.post('/api/reports/submit', upload.single('reportFile'), async (req, res) => {
+  try {
+    const { studentId, facultyEmail, title, domain, remarks } = req.body;
+    
+    if (!studentId || !facultyEmail || !title || !domain || !req.file) {
+      return res.status(400).json({ error: 'Missing required fields or report file' });
+    }
+    
+    const reportUrl = `http://localhost:5000/uploads/reports/${req.file.filename}`;
+    
+    const newReport = new Report({
+      studentId,
+      facultyEmail,
+      title,
+      domain,
+      reportUrl,
+      remarks
+    });
+    
+    await newReport.save();
+    res.status(201).json({ message: 'Report submitted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to submit report' });
+  }
+});
+
+app.post('/api/admin/acceptance-window', async (req, res) => {
+  const { startDate, endDate } = req.body;
+  try {
+    const window = await AcceptanceWindow.findOne();
+    if (window) {
+      window.startDate = new Date(startDate);
+      window.endDate = new Date(endDate);
+      await window.save();
+    } else {
+      await AcceptanceWindow.create({ startDate: new Date(startDate), endDate: new Date(endDate) });
+    }
+    res.json({ message: 'Acceptance window updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update acceptance window' });
+  }
+});
+
+app.get('/api/faculty/acceptance-window', async (req, res) => {
+  try {
+    const window = await AcceptanceWindow.findOne({});
+    if (!window) {
+      return res.json({ showAcceptance: false, message: 'Acceptance window not configured' });
+    }
+
+    const now = new Date();
+    const showAcceptance = now >= window.startDate && now <= window.endDate;
+
+    res.json({
+      showAcceptance,
+      message: showAcceptance
+        ? 'Acceptance window is open'
+        : now < window.startDate
+          ? `Acceptance window starts on ${new Date(window.startDate).toDateString()}`
+          : `Acceptance window ended on ${new Date(window.endDate).toDateString()}`,
+      startDate: window.startDate.toISOString(),
+      endDate: window.endDate.toISOString()
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch acceptance window' });
+  }
+});
+
+// Get reports for faculty
+app.get('/api/faculty/reports', async (req, res) => {
+  try {
+    const { facultyEmail } = req.query;
+    const reports = await Report.find({ facultyEmail })
+      .populate('studentId', 'name email');
+    res.json(reports);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch reports' });
+  }
+});
 
 // get time frame 
 
@@ -183,6 +399,52 @@ app.get('/api/admin/window', async (req, res) => {
   }
 });
 
+app.get('/api/applications/student', async (req, res) => {  // Changed endpoint
+  try {
+    const studentEmail = req.query.studentEmail;
+    if (!studentEmail) {
+      return res.status(400).json({ error: 'studentEmail query parameter is required' });
+    }
+    
+    const applications = await Application.find({ email: studentEmail });
+    res.json(applications);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+});
+
+app.get('/api/applications', async (req, res) => {
+  try {
+    const facultyEmail = req.query.facultyEmail;
+    const department = req.query.department;
+    if (!facultyEmail) {
+      return res.status(400).json({ error: 'facultyEmail query parameter is required' });
+    }
+    
+    const facultyUser = await FacultyUser.findOne({ 
+      email: { $regex: new RegExp(`^${facultyEmail}$`, 'i') } 
+    });
+    
+    if (!facultyUser) {
+      return res.status(404).json({ error: 'Faculty user not found' });
+    }
+    
+    // Create filter object with isFinalized condition
+    const filter = {
+      facultyEmail: { $regex: new RegExp(`^${facultyUser.email}$`, 'i') },
+      isFinalized: false
+    };
+    
+    if (department) filter.studentDepartment = department;
+
+    const applications = await Application.find(filter);  // Use filter here
+    res.json(applications);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+});
 
 app.post('/api/applications/basic-submit', upload.fields([
   { name: 'aadhaarFile', maxCount: 1 },
@@ -197,10 +459,14 @@ app.post('/api/applications/basic-submit', upload.fields([
     const resumeUrl = req.files['resumeFile'] ? `/uploads/resume/${req.files['resumeFile'][0].filename}` : '';
     const nocUrl = req.files['nocFile'] ? `/uploads/noc/${req.files['nocFile'][0].filename}` : '';
 
+    // Safely parse and validate dates
+    const validStart = formData.startDate && !isNaN(new Date(formData.startDate).getTime());
+    const validEnd = formData.endDate && !isNaN(new Date(formData.endDate).getTime());
+
     const newApp = new Application({
       ...formData,
-      startDate: new Date(formData.startDate),
-      endDate: new Date(formData.endDate),
+      startDate: validStart ? new Date(formData.startDate) : null,
+      endDate: validEnd ? new Date(formData.endDate) : null,
       studentDepartment: formData.department,
       aadhaarUrl, idCardUrl, resumeUrl, nocUrl,
     });
@@ -230,8 +496,44 @@ app.post('/api/applications/basic-submit', upload.fields([
   }
 });
 
-// Add this route to duplicate application with new faculty details
-app.post('/api/applications/:id/duplicate', async (req, res) => {
+
+app.get('/api/faculty/available', async (req, res) => {
+  try {
+    const availableFaculties = await FacultyUser.find({
+      internshipOffering: { $ne: null }
+    }).select('facultyName email department internshipOffering');
+    res.json(availableFaculties);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch available faculties' });
+  }
+});
+
+// server.js
+app.get('/api/applications/finalized', async (req, res) => {
+  try {
+    const email = req.query.email;
+    const app = await Application.findOne({
+      email,
+      isFinalized: true
+    }).lean();
+
+    if (!app) return res.json(null); // No finalization
+
+    res.json({
+      faculty: app.faculty,
+      facultyEmail: app.facultyEmail,
+      facultyDepartment: app.facultyDepartment
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to check finalized application' });
+  }
+});
+
+
+// Add this new route to handle multiple faculty applications
+app.post('/api/applications/:id/duplicate-multiple', async (req, res) => {
   try {
     const originalApp = await Application.findById(req.params.id);
     if (!originalApp) return res.status(404).json({ error: 'Original application not found' });
@@ -239,56 +541,179 @@ app.post('/api/applications/:id/duplicate', async (req, res) => {
     const student = await StudentUser.findOne({ email: originalApp.email });
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
-    if (student.applications.length >= 5) {
-      return res.status(403).json({ error: 'Application limit reached' });
-    }
+    const choices = req.body.choices;
+    const newApplications = [];
 
-    // Check if student already applied to this faculty
-    const existingFacultyApp = await Application.findOne({
-      email: originalApp.email,
-      facultyEmail: req.body.facultyEmail
-    });
-    if (existingFacultyApp) {
-      return res.status(400).json({ 
-        error: 'You have already applied to this faculty member' 
+    for (const choice of choices) {
+      // VALIDATION: All fields present and dates valid
+      if (
+        !choice.faculty || !choice.facultyEmail || !choice.facultyDepartment ||
+        !choice.preferredStart || !choice.preferredEnd ||
+        isNaN(new Date(choice.preferredStart).getTime()) ||
+        isNaN(new Date(choice.preferredEnd).getTime())
+      ) {
+        return res.status(400).json({ error: 'Please select valid faculty and dates for all choices.' });
+      }
+
+      // Check for duplicate
+      const existingFacultyApp = await Application.findOne({
+        email: originalApp.email,
+        facultyEmail: choice.facultyEmail
       });
-    }
 
-    // Check if student already applied to this department
-    const existingDeptApp = await Application.findOne({
-      email: originalApp.email,
-      facultyDepartment: req.body.facultyDepartment
-    });
-    if (existingDeptApp) {
-      return res.status(400).json({ 
-        error: 'You have already applied to this department' 
+      if (existingFacultyApp) {
+        return res.status(400).json({ 
+          error: `You have already applied to faculty member ${choice.faculty}` 
+        });
+      }
+
+      const newApp = new Application({
+        ...originalApp.toObject(),
+        _id: new mongoose.Types.ObjectId(),
+        faculty: choice.faculty,
+        facultyEmail: choice.facultyEmail,
+        facultyDepartment: choice.facultyDepartment,
+        startDate: new Date(choice.preferredStart),
+        endDate: new Date(choice.preferredEnd),
+        status: 'pending',
+        createdAt: new Date(),
+        updatedAt: new Date()
       });
+
+      student.applications.push({
+        faculty: choice.faculty,
+        facultyDepartment: choice.facultyDepartment
+      });
+
+      newApplications.push(newApp);
     }
 
-    const newApp = new Application({
-      ...originalApp.toObject(),
-      _id: new mongoose.Types.ObjectId(),
-      faculty: req.body.faculty,
-      facultyEmail: req.body.facultyEmail,
-      facultyDepartment: req.body.facultyDepartment,
-      status: 'pending',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-
-    student.applications.push({
-      faculty: req.body.faculty,
-      facultyDepartment: req.body.facultyDepartment
-    });
     await student.save();
-    await newApp.save();
+    await Application.insertMany(newApplications);
 
-    res.status(201).json({ message: 'New application created', applicationId: newApp._id });
+    res.status(201).json({ 
+      message: `${choices.length} application(s) created successfully` 
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to create new application' });
+    res.status(500).json({ error: 'Failed to create applications' });
   }
 });
+
+
+// Get accepted applications for a student
+app.get('/api/applications/accepted', async (req, res) => {
+  try {
+    const email = req.query.email; // Change from studentId to email
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    const applications = await Application.find({
+      email: email,
+      status: 'accepted',
+      isFinalized: false
+    });
+
+    res.json(applications);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch accepted applications' });
+  }
+});
+
+// Finalize an application
+app.post('/api/applications/:id/finalize', async (req, res) => {
+  try {
+    const appId = req.params.id;
+    const application = await Application.findById(appId);
+    
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    // Check if student has already finalized an application
+    const existingFinalized = await Application.findOne({
+      email: application.email,
+      isFinalized: true
+    });
+    
+    if (existingFinalized) {
+      return res.status(400).json({ error: 'You have already finalized an internship' });
+    }
+
+    // Update application
+    application.isFinalized = true;
+    application.finalizedAt = new Date();
+    await application.save();
+
+    res.json({ message: 'Internship finalized successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to finalize application' });
+  }
+});
+
+// Get finalized students for admin
+app.get('/api/admin/finalized-students', async (req, res) => {
+  try {
+    const finalized = await Application.find({ isFinalized: true })
+      .select('name email faculty facultyDepartment finalizedAt hasJoined') // Add hasJoined
+      .lean();
+
+    const result = finalized.map(app => ({
+      studentName: app.name,
+      studentEmail: app.email,
+      facultyName: app.faculty,
+      facultyDepartment: app.facultyDepartment,
+      finalizedAt: app.finalizedAt,
+      hasJoined: app.hasJoined // Add this
+    }));
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch finalized internships' });
+  }
+});
+
+
+
+// Get accepted students for a faculty
+app.get('/api/faculty/accepted-students', async (req, res) => {
+  const facultyEmail = req.query.facultyEmail;
+  if (!facultyEmail) {
+    return res.status(400).json({ error: 'facultyEmail is required' });
+  }
+  try {
+    const accepted = await Application.find({
+      facultyEmail: { $regex: new RegExp(`^${facultyEmail}$`, 'i') },
+      status: 'accepted'
+    }).select('name email department').lean();
+    res.json(accepted);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch accepted students' });
+  }
+});
+
+
+// Get finalized students for a faculty
+app.get('/api/faculty/finalized-students', async (req, res) => {
+  const facultyEmail = req.query.facultyEmail;
+  if (!facultyEmail) {
+    return res.status(400).json({ error: 'facultyEmail query parameter is required' });
+  }
+  
+  const finalized = await Application.find({ 
+    isFinalized: true,
+    facultyEmail: { $regex: new RegExp(`^${facultyEmail}$`, 'i') }
+  }).select('name email department currentYear finalizedAt hasJoined') // Add hasJoined
+    .lean();
+    
+  res.json(finalized);
+});
+
 
 app.get('/api/student/info', async (req, res) => {
   try {
@@ -324,8 +749,6 @@ app.patch('/api/applications/:id/update-faculty', async (req, res) => {
   }
 });
 
-
-// form api fpor fculty 
 // GET /api/faculty/internship-form?email=foo@uni.edu
 app.get('/api/faculty/internship-form', async (req, res) => {
   const { email } = req.query;
@@ -403,11 +826,32 @@ app.post('/api/faculty/internship-form', async (req, res) => {
   }
 });
 
+// Mark student as joined
+app.patch('/api/applications/mark-joined', async (req, res) => {
+  try {
+    const { studentEmail, facultyEmail } = req.body;
+    
+    // Find the finalized application
+    const application = await Application.findOne({ 
+      email: studentEmail,
+      facultyEmail: facultyEmail,
+      isFinalized: true
+    });
 
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
 
+    // Update join status
+    application.hasJoined = true;
+    await application.save();
 
-
-
+    res.json({ message: 'Student marked as joined' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update join status' });
+  }
+});
 
 // Signup
 app.post('/api/faculty/signup', async (req, res) => {
@@ -501,18 +945,17 @@ app.get('/api/student/email/:email', async (req, res) => {
 });
 
 
-// Fetch Applications
+// Fetch Applications this to be shown in faculty dashboard ( not hsown once accepted or declined )
 app.get('/api/applications', async (req, res) => {
   try {
     const facultyEmail = req.query.facultyEmail;
-    // const department = req.query.department;
+    const department = req.query.department;
     if (!facultyEmail) {
       return res.status(400).json({ error: 'facultyEmail query parameter is required' });
     }
     const facultyUser = await FacultyUser.findOne({ 
       email: { $regex: new RegExp(`^${facultyEmail}$`, 'i') } 
     });
-    console.log(1);
     if (!facultyUser) {
       return res.status(404).json({ error: 'Faculty user not found' });
     }
@@ -521,9 +964,11 @@ app.get('/api/applications', async (req, res) => {
         $regex: new RegExp(`^${facultyUser.email}$`, 'i') 
       }
     };
-    // if (department) filter.studentDepartment = department; // Filter by student department
-    const applications = await Application.find(filter);
-    // console.log(applications);
+    if (department) filter.studentDepartment = department; // Filter by student department
+    const applications = await Application.find({
+      facultyEmail: new RegExp(`^${facultyEmail}$`, 'i'),
+      isFinalized: false  // ✅ show until student finalizes
+    });
     res.json(applications);
   } catch (err) {
     console.error(err);
@@ -532,11 +977,17 @@ app.get('/api/applications', async (req, res) => {
 });
 
 // Add this route to handle application count
+// Update application count endpoint to include finalized status
 app.get('/api/applications/count', async (req, res) => {
   try {
     const email = req.query.email;
     const count = await Application.countDocuments({ email });
-    res.json({ count });
+    const finalized = await Application.countDocuments({ 
+      email, 
+      isFinalized: true 
+    });
+    
+    res.json({ count, finalized });
   } catch (err) {
     res.status(500).json({ error: 'Failed to get application count' });
   }
@@ -739,7 +1190,14 @@ app.post('/api/student/login', async (req, res) => {
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-    res.status(200).json({ message: 'Login successful', name: user.name, email: user.email });
+    const applications = await Application.find({ email: user.email }).select('_id');
+      res.status(200).json({
+        message: 'Login successful',
+        name: user.name,
+        email: user.email,
+        _id: user._id,
+        applications
+      });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
@@ -811,6 +1269,40 @@ app.get('/api/admin/faculty', async (req, res) => {
   } catch (err) {
     console.error('Error fetching faculty data:', err);
     res.status(500).json({ error: 'Failed to fetch faculty data' });
+  }
+});
+
+
+
+//  the applications that the faculty receuved which is shown in admin dashnboard
+app.get('/api/admin/facultyapplications', async (req, res) => {
+  try {
+    const facultyEmail = req.query.facultyEmail;
+    // const department = req.query.department;
+
+    if (!facultyEmail) {
+      return res.status(400).json({ error: 'facultyEmail query parameter is required' });
+    }
+
+    const facultyUser = await FacultyUser.findOne({ 
+      email: { $regex: new RegExp(`^${facultyEmail}$`, 'i') } 
+    });
+    if (!facultyUser) {
+      return res.status(404).json({ error: 'Faculty user not found' });
+    }
+
+    const filter = {
+      facultyEmail: { 
+        $regex: new RegExp(`^${facultyUser.email}$`, 'i') 
+      }};
+
+
+    const applications = await Application.find(filter).lean();
+    res.json(applications);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch applications' });
   }
 });
 

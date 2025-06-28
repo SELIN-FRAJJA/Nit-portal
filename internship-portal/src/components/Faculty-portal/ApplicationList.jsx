@@ -120,7 +120,7 @@ const fetchApplications = async () => {
 
       {/* Content Header */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-1">Intern Applications</h2>
+        <h2 className="text-2xl font-bold mb-1 text-black">Intern Applications</h2>
         <p className="text-gray-600">Review and manage student internship applications</p>
       </div>
 
@@ -139,7 +139,7 @@ const fetchApplications = async () => {
             <div key={app._id} className="bg-white p-6 rounded-xl shadow hover:shadow-md transition">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-xl font-semibold">{app.name}</h3>
+                  <h3 className="text-xl font-semibold text-black">{app.name}</h3>
                   <p className="text-indigo-600 font-medium mb-2">{app.domain}</p>
                   <div className="flex items-center space-x-4 text-sm text-gray-600">
                     <span>🎓 {app.collegeName}</span>

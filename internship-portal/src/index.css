@@ -53,6 +53,14 @@ button {
 button:hover {
   border-color: #646cff;
 }
+
+input[type="radio"] {
+  accent-color: #dde0e4; /* gray-300 */
+}
+input[type="radio"]:checked {
+  accent-color: #2563eb; /* blue-600 */
+}
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -69,6 +77,6 @@ input, textarea, select {
     color: #747bff;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: #1e1919;
   }
 }
