@@ -31,7 +31,12 @@ export default function ApplicationList({
     fetchFacultyName();
   }, [facultyEmail]);
 
+
 const fetchApplications = async () => {
+  console.log("Calling API with:", {
+    facultyEmail,
+    facultyDepartment
+  });
   if (!facultyEmail) {
     setApplications([]);
     return;
@@ -46,6 +51,7 @@ const fetchApplications = async () => {
     }
 
     const response = await axios.get(url);
+    console.log('Fetched applications:', response.data); 
     console.log('→ [fetchApplications] status:', response.status);
     console.log('→ [fetchApplications] data:', response.data);
 
@@ -130,10 +136,11 @@ const fetchApplications = async () => {
         <div className="text-center py-12 text-red-600">{error}</div>
       ) : applications.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-lg font-medium text-gray-900">No Pending Applications</p>
-          <p className="text-gray-600">All applications have been reviewed.</p>
+          <p className="text-lg font-medium text-gray-900">No Applications Found</p>
+          <p className="text-gray-600">No student has applied yet under your supervision.</p>
         </div>
       ) : (
+
         <div className="grid gap-6">
           {applications.map((app) => (
             <div key={app._id} className="bg-white p-6 rounded-xl shadow hover:shadow-md transition">

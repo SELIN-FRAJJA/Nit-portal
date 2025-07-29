@@ -414,38 +414,6 @@ app.get('/api/applications/student', async (req, res) => {  // Changed endpoint
   }
 });
 
-app.get('/api/applications', async (req, res) => {
-  try {
-    const facultyEmail = req.query.facultyEmail;
-    const department = req.query.department;
-    if (!facultyEmail) {
-      return res.status(400).json({ error: 'facultyEmail query parameter is required' });
-    }
-    
-    const facultyUser = await FacultyUser.findOne({ 
-      email: { $regex: new RegExp(`^${facultyEmail}$`, 'i') } 
-    });
-    
-    if (!facultyUser) {
-      return res.status(404).json({ error: 'Faculty user not found' });
-    }
-    
-    // Create filter object with isFinalized condition
-    const filter = {
-      facultyEmail: { $regex: new RegExp(`^${facultyUser.email}$`, 'i') },
-      isFinalized: false
-    };
-    
-    if (department) filter.studentDepartment = department;
-
-    const applications = await Application.find(filter);  // Use filter here
-    res.json(applications);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch applications' });
-  }
-});
-
 app.post('/api/applications/basic-submit', upload.fields([
   { name: 'aadhaarFile', maxCount: 1 },
   { name: 'idCardFile', maxCount: 1 },
@@ -953,22 +921,26 @@ app.get('/api/applications', async (req, res) => {
     if (!facultyEmail) {
       return res.status(400).json({ error: 'facultyEmail query parameter is required' });
     }
+
     const facultyUser = await FacultyUser.findOne({ 
       email: { $regex: new RegExp(`^${facultyEmail}$`, 'i') } 
     });
+
     if (!facultyUser) {
       return res.status(404).json({ error: 'Faculty user not found' });
     }
+
     const filter = {
       facultyEmail: { 
-        $regex: new RegExp(`^${facultyUser.email}$`, 'i') 
-      }
+        $regex: new RegExp(`^${facultyEmail}$`, 'i') 
+      },
+      isFinalized: false
     };
-    if (department) filter.studentDepartment = department; // Filter by student department
-    const applications = await Application.find({
-      facultyEmail: new RegExp(`^${facultyEmail}$`, 'i'),
-      isFinalized: false  // ✅ show until student finalizes
-    });
+
+    //if (department) filter.studentDepartment = department;
+
+    const applications = await Application.find(filter);
+
     res.json(applications);
   } catch (err) {
     console.error(err);

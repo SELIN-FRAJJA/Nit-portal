@@ -472,6 +472,7 @@ You need to define dates for the following five windows:
                       id="startDate"
                       value={windowState.startDate}
                       onChange={handleWindowChange}
+                      min={new Date().toISOString().split('T')[0]} 
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                       required
                     />
@@ -523,6 +524,8 @@ You need to define dates for the following five windows:
                             id="startDate"
                             value={windowState.startDate}
                             onChange={handleWindowChange}
+                            min={windowState.startDate}
+                            max={windowState.endDate}
                             className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                           />
@@ -535,6 +538,8 @@ You need to define dates for the following five windows:
                             id="endDate"
                             value={windowState.endDate}
                             onChange={handleWindowChange}
+                            min={windowState.startDate}
+                            max={windowState.endDate}
                             className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                           />
@@ -566,6 +571,8 @@ You need to define dates for the following five windows:
                             id="studentStartDate"
                             value={studentAppWindow.startDate}
                             onChange={handleStudentAppWindowChange}
+                            min={windowState.startDate}
+                            max={windowState.endDate}
                             className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                           />
@@ -578,6 +585,8 @@ You need to define dates for the following five windows:
                             id="studentEndDate"
                             value={studentAppWindow.endDate}
                             onChange={handleStudentAppWindowChange}
+                            min={windowState.startDate}
+                            max={windowState.endDate}
                             className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                           />
@@ -611,6 +620,8 @@ You need to define dates for the following five windows:
                           onChange={(e) =>
                             setAcceptanceWindow((prev) => ({ ...prev, startDate: e.target.value }))
                           }
+                          min={windowState.startDate}
+                          max={windowState.endDate}
                           className="border border-gray-300 rounded px-3 py-2 w-full"
                           required
                         />
@@ -625,6 +636,8 @@ You need to define dates for the following five windows:
                           onChange={(e) =>
                             setAcceptanceWindow((prev) => ({ ...prev, endDate: e.target.value }))
                           }
+                          min={windowState.startDate}
+                          max={windowState.endDate}
                           className="border border-gray-300 rounded px-3 py-2 w-full"
                           required
                         />
@@ -655,6 +668,8 @@ You need to define dates for the following five windows:
                             id="resultStartDate"
                             value={resultWindow.startDate}
                             onChange={handleResultChange}
+                            min={windowState.startDate}
+                            max={windowState.endDate}
                             className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                           />
@@ -667,6 +682,8 @@ You need to define dates for the following five windows:
                             id="resultEndDate"
                             value={resultWindow.endDate}
                             onChange={handleResultChange}
+                            min={windowState.startDate}
+                            max={windowState.endDate}
                             className="border border-gray-300 rounded px-3 py-2 w-full"
                             required
                           />
